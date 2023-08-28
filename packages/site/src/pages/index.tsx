@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
 import { connectSnap, getSnap, shouldDisplayReconnectButton } from '../utils';
 import {
@@ -10,11 +10,21 @@ import { encodeFunctionData, parseEther } from 'viem';
 import { defaultSnapOrigin } from '../config';
 import { KeyringSnapRpcClient } from '@metamask/keyring-api';
 import { v4 as uuid } from 'uuid';
-import { Button, HStack, Input, Link, Tag, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  HStack,
+  Input,
+  Link,
+  Tag,
+  VStack,
+  useToast,
+} from '@chakra-ui/react';
 import SHeading from '../components/Heading';
 import SText from '../components/Text';
 
 const Index = () => {
+  const toast = useToast();
+  const toastIdRef = React.useRef();
   const [state, dispatch] = useContext(MetaMaskContext);
   const [connectedAccount, setConnectedAccount] = useState(null);
   const [chainId, setChainId] = useState(null);
@@ -132,8 +142,12 @@ const Index = () => {
   async function submitRequest(to, data, chainId) {
     if (keyring && connectedAccount && to && data && chainId) {
       setSendingKeyringRequest(true);
+      toastIdRef.current = toast({
+        title: 'Sending UserOperation',
+        duration: 60_000,
+        isClosable: true,
+      });
 
-      console.log(createdKeyringAccounts[0]);
       try {
         let response = await keyring.submitRequest({
           account: createdKeyringAccounts[0].id,
@@ -155,6 +169,33 @@ const Index = () => {
         });
 
         console.log(response);
+        if (response.result.success) {
+          toast.update(toastIdRef.current, {
+            status: 'success',
+            title: 'UserOperation Successful',
+            description: (
+              <Link
+                href={`https://www.jiffyscan.xyz/userOpHash/${response.result.userOpHash}?network=base-testnet`}
+                target="_blank"
+              >
+                View Transaction on Jiffyscan
+              </Link>
+            ),
+          });
+        } else {
+          toast.update(toastIdRef.current, {
+            status: 'error',
+            title: 'UserOperation Failed',
+            description: (
+              <Link
+                href={`https://www.jiffyscan.xyz/userOpHash/${response.result.userOpHash}?network=base-testnet`}
+                target="_blank"
+              >
+                View Transaction on Jiffyscan
+              </Link>
+            ),
+          });
+        }
       } catch (e) {
         console.error(e);
       } finally {

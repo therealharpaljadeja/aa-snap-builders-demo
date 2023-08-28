@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Account Abstraction Snap written in TypeScript.",
   "proposedName": "AA Snap",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "https://github.com/therealharpaljadeja/aa-snap"
   },
   "source": {
-    "shasum": "MYtg+4xYydxToTxxTS5zav5hS/Voe7BJ7FzL4WU6fYg=",
+    "shasum": "kQIlvxLENMZ8jeGA/qc99uU8pNOgUuDhNyHesJBEIuk=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

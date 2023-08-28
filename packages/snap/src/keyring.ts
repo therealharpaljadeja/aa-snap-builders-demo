@@ -460,6 +460,11 @@ export class ERC4337Keyring implements Keyring {
 
           let sendUserOp = await this.sendUserOperation(userOp, tx.chainId);
 
+          let receipt = await this.getUserOperationReceipt(
+            sendUserOp,
+            tx.chainId,
+          );
+
           await snap.request({
             method: 'snap_notify',
             params: {
@@ -468,7 +473,7 @@ export class ERC4337Keyring implements Keyring {
             },
           });
 
-          return sendUserOp;
+          return receipt;
         }
       }
 
@@ -546,6 +551,37 @@ export class ERC4337Keyring implements Keyring {
     );
 
     let { result } = await sendUserOpResponseRaw.json();
+
+    return result;
+  }
+
+  async getUserOperationReceipt(userOpHash, chainId) {
+    var receipt = null;
+    var result = null;
+    while (receipt == null || result == null) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      receipt = await fetch(
+        `https://api.pimlico.io/v1/${chains[chainId].chainName}/rpc?apikey=67ed1d98-34bf-410c-8bdb-711a474f192e`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_getUserOperationReceipt',
+            id: 1,
+            params: [userOpHash],
+          }),
+        },
+      );
+
+      result = (await receipt.json()).result;
+
+      if (result !== null) {
+        console.log(result);
+      }
+    }
 
     return result;
   }
